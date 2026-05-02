@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     GUPSHUP_API_KEY: str = ""
     GUPSHUP_APP_NAME: str = ""
     GUPSHUP_SOURCE_NUMBER: str = ""
-    BASE_URL: str = "http://localhost:8000"
+    BASE_URL: str = "https://backend-gamma-seven-22.vercel.app"  # Production URL
     SCHEDULER_HOUR: int = 8
     SCHEDULER_MINUTE: int = 0
     EXPIRY_REMINDER_DAYS: int = 5
