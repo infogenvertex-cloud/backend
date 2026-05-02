@@ -16,14 +16,17 @@ try:
     logging.info("Database tables created successfully")
 except Exception as e:
     logging.error(f"Error creating database tables: {e}")
+    # Don't fail the app startup, just log the error
+    pass
 
 app = FastAPI(title="Gym Management System")
 
-# CORS Configuration - Allow both local and production URLs
+# CORS Configuration - Allow frontend domains
 allowed_origins = [
     "http://localhost:5006",
-    "http://localhost:5007",
+    "http://localhost:5007", 
     "http://localhost:3000",
+    "https://frontend-three-swart-21e12w3z.vercel.app",  # Add your frontend URL
 ]
 
 # Add production frontend URL from environment variable
@@ -31,13 +34,16 @@ frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
     allowed_origins.append(frontend_url)
 
-# For Vercel deployment, allow all vercel.app domains in development
-if os.getenv("VERCEL_ENV") == "preview" or os.getenv("VERCEL_ENV") == "development":
-    allowed_origins.append("https://*.vercel.app")
+# For Vercel deployment, be more permissive with CORS
+if os.getenv("VERCEL"):  # Vercel sets this environment variable
+    allowed_origins.extend([
+        "https://*.vercel.app",
+        "https://frontend-three-swart-21e12w3z.vercel.app"
+    ])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins if os.getenv("VERCEL_ENV") != "production" else [frontend_url] if frontend_url else allowed_origins,
+    allow_origins=["*"] if os.getenv("VERCEL") else allowed_origins,  # Allow all origins in Vercel for now
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
