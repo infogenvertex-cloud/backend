@@ -1,38 +1,23 @@
 import logging
 import os
-from contextlib import asynccontextmanager
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import engine, Base
 from app.routers import auth, members, subscriptions, payments, dashboard, visitors
-from app.services.scheduler_service import check_expiring_subscriptions
 
 logging.basicConfig(level=logging.INFO)
 
-scheduler = AsyncIOScheduler()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+# Initialize database tables
+try:
     Base.metadata.create_all(bind=engine)
-    scheduler.add_job(
-        check_expiring_subscriptions,
-        CronTrigger(hour=settings.SCHEDULER_HOUR, minute=settings.SCHEDULER_MINUTE),
-        id="daily_expiry_check",
-        replace_existing=True,
-    )
-    scheduler.start()
-    yield
-    scheduler.shutdown()
+    logging.info("Database tables created successfully")
+except Exception as e:
+    logging.error(f"Error creating database tables: {e}")
 
-
-app = FastAPI(title="Gym Management System", lifespan=lifespan)
+app = FastAPI(title="Gym Management System")
 
 # CORS Configuration - Allow both local and production URLs
 allowed_origins = [
@@ -60,6 +45,7 @@ app.add_middleware(
 
 # Only mount static files if directory exists (won't exist in Vercel)
 if os.path.exists("invoices"):
+    from fastapi.staticfiles import StaticFiles
     app.mount("/invoices", StaticFiles(directory="invoices"), name="invoices")
 
 app.include_router(auth.router)
@@ -70,6 +56,7 @@ app.include_router(dashboard.router)
 app.include_router(visitors.router)
 
 # Health check endpoint for Vercel
+@app.get("/")
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "message": "Gym Management API is running"}
