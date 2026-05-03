@@ -67,9 +67,10 @@ app.include_router(visitors.router)
 def health_check():
     try:
         # Test database connection
+        from sqlalchemy import text
         from app.database import engine
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as e:
         logging.error(f"Database health check failed: {e}")

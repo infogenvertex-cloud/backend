@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from app.config import settings
@@ -13,7 +13,7 @@ try:
     engine = create_engine(database_url, pool_pre_ping=True, pool_recycle=3600)
     # Test the connection
     with engine.connect() as conn:
-        conn.execute("SELECT 1")
+        conn.execute(text("SELECT 1"))
     print("Database connection successful!")
 except Exception as e:
     print(f"Database connection failed: {e}")
