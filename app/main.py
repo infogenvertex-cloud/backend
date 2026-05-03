@@ -1,7 +1,7 @@
 import logging
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -65,7 +65,36 @@ app.include_router(visitors.router)
 @app.get("/")
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "message": "Gym Management API is running"}
+    try:
+        # Test database connection
+        from app.database import engine
+        with engine.connect() as conn:
+            conn.execute("SELECT 1")
+        db_status = "connected"
+    except Exception as e:
+        logging.error(f"Database health check failed: {e}")
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "healthy", 
+        "message": "Gym Management API is running",
+        "database": db_status,
+        "environment": "vercel" if os.getenv("VERCEL") else "local"
+    }
+
+# Debug endpoint
+@app.get("/debug")
+def debug_info():
+    return {
+        "vercel": bool(os.getenv("VERCEL")),
+        "vercel_env": os.getenv("VERCEL_ENV"),
+        "db_host": settings.DB_HOST,
+        "db_port": settings.DB_PORT,
+        "db_username": settings.DB_USERNAME,
+        "db_password_set": bool(settings.DB_PASSWORD),
+        "database_url_set": bool(settings.DATABASE_URL),
+        "base_url": settings.BASE_URL
+    }
 
 # Vercel serverless function handler
 handler = app
