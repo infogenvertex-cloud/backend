@@ -17,8 +17,9 @@ class Subscription(Base):
     status = Column(String(20), default="active")
     
     # Payment fields (merged from Payment model)
-    amount = Column(Float, nullable=False)
-    payment_date = Column(DateTime, default=datetime.utcnow)
+    # Made nullable for backward compatibility with old records
+    amount = Column(Float, nullable=True)
+    payment_date = Column(DateTime, default=datetime.utcnow, nullable=True)
     invoice_url = Column(String(255), nullable=True)
 
     member = relationship("Member", back_populates="subscriptions")
