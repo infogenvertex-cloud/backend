@@ -12,7 +12,8 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"], dependencies
 
 def _enrich(sub):
     """Add member details from the related member."""
-    resp = SubscriptionResponse.model_validate(sub)
+    # Use from_attributes to properly handle SQLAlchemy models with NULL values
+    resp = SubscriptionResponse.model_validate(sub, from_attributes=True)
     if sub.member:
         resp.member_code = sub.member.member_id
         resp.member_name = sub.member.name
