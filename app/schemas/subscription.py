@@ -9,6 +9,7 @@ class SubscriptionCreate(BaseModel):
     plan: str
     start_date: date
     amount: float  # Payment amount merged
+    payment_date: Optional[date] = None  # Optional payment date (defaults to today if not provided)
     
     @field_validator('amount')
     @classmethod

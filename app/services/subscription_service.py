@@ -34,6 +34,14 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
     
     # Create subscription with payment
     from datetime import datetime
+    
+    # Use provided payment_date or default to current time
+    if data.payment_date:
+        # Convert date to datetime (set time to noon UTC for consistency)
+        payment_datetime = datetime.combine(data.payment_date, datetime.min.time()).replace(hour=12)
+    else:
+        payment_datetime = datetime.utcnow()
+    
     subscription = Subscription(
         member_id=data.member_id,
         plan=data.plan,
@@ -41,7 +49,7 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
         end_date=end_date,
         status="active",
         amount=data.amount,
-        payment_date=datetime.utcnow(),  # Explicitly set payment_date
+        payment_date=payment_datetime,  # Use provided or current datetime
     )
     db.add(subscription)
     db.commit()
