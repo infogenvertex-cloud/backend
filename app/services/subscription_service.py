@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.models.subscription import Subscription
 from app.models.member import Member
 from app.schemas.subscription import SubscriptionCreate, SubscriptionUpdate
-from app.services.invoice_service import generate_invoice
+# from app.services.invoice_service import generate_invoice  # COMMENTED OUT - Invoice generation disabled
 
 PLAN_DURATIONS = {
     "1_month": relativedelta(months=1),
@@ -55,18 +55,20 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
     db.commit()
     db.refresh(subscription)
     
+    # ===== INVOICE GENERATION COMMENTED OUT =====
     # Generate invoice (returns API endpoint URL for on-demand generation)
-    invoice_url = generate_invoice(
-        payment_id=subscription.id,
-        member_code=member.member_id,
-        member_name=member.name,
-        member_phone=member.phone,
-        amount=subscription.amount,
-        payment_date=subscription.payment_date,
-    )
-    subscription.invoice_url = invoice_url
-    db.commit()
-    db.refresh(subscription)
+    # invoice_url = generate_invoice(
+    #     payment_id=subscription.id,
+    #     member_code=member.member_id,
+    #     member_name=member.name,
+    #     member_phone=member.phone,
+    #     amount=subscription.amount,
+    #     payment_date=subscription.payment_date,
+    # )
+    # subscription.invoice_url = invoice_url
+    # db.commit()
+    # db.refresh(subscription)
+    # ===== END INVOICE GENERATION =====
     
     return subscription, member
 
