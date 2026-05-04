@@ -30,7 +30,7 @@ allowed_origins = [
     "http://localhost:5006",
     "http://localhost:5007", 
     "http://localhost:3000",
-    "https://frontend-three-swart-21e12w3z.vercel.app",  # Add your frontend URL
+    "https://frontend-three-swart-2tke12jw3z.vercel.app",  # Add your frontend URL
 ]
 
 # Add production frontend URL from environment variable
@@ -42,7 +42,7 @@ if frontend_url:
 if os.getenv("VERCEL"):  # Vercel sets this environment variable
     allowed_origins.extend([
         "https://*.vercel.app",
-        "https://frontend-three-swart-21e12w3z.vercel.app"
+        "https://frontend-three-swart-2tke12jw3z.vercel.app"
     ])
 
 app.add_middleware(

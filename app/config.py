@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     GUPSHUP_APP_NAME: str = ""
     GUPSHUP_SOURCE_NUMBER: str = ""
     BASE_URL: str = "https://backend-gamma-seven-22.vercel.app"
+    FRONTEND_URL: str = ""  # Frontend URL for CORS
     SCHEDULER_HOUR: int = 8
     SCHEDULER_MINUTE: int = 0
     EXPIRY_REMINDER_DAYS: int = 5
