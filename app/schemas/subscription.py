@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class SubscriptionCreate(BaseModel):
@@ -9,6 +9,13 @@ class SubscriptionCreate(BaseModel):
     plan: str
     start_date: date
     amount: float  # Payment amount merged
+    
+    @field_validator('amount')
+    @classmethod
+    def validate_amount(cls, v):
+        if v is None or v <= 0:
+            raise ValueError('Amount must be greater than 0')
+        return v
 
 
 class SubscriptionUpdate(BaseModel):
