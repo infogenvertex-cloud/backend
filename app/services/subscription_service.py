@@ -7,7 +7,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.subscription import Subscription
+from app.models.member import Member
 from app.schemas.subscription import SubscriptionCreate, SubscriptionUpdate
+from app.services.invoice_service import generate_invoice
 
 PLAN_DURATIONS = {
     "1_month": relativedelta(months=1),
@@ -17,26 +19,50 @@ PLAN_DURATIONS = {
 }
 
 
-def create_subscription(db: Session, data: SubscriptionCreate) -> Subscription:
+def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscription, Member]:
+    """Create subscription with payment in a single transaction."""
     if data.plan not in PLAN_DURATIONS:
         raise HTTPException(status_code=400, detail=f"Invalid plan. Choose from: {list(PLAN_DURATIONS.keys())}")
 
+    # Verify member exists
+    member = db.query(Member).filter(Member.id == data.member_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    # Calculate end date
     end_date = data.start_date + PLAN_DURATIONS[data.plan]
+    
+    # Create subscription with payment
     subscription = Subscription(
         member_id=data.member_id,
         plan=data.plan,
         start_date=data.start_date,
         end_date=end_date,
         status="active",
+        amount=data.amount,
     )
     db.add(subscription)
     db.commit()
     db.refresh(subscription)
-    return subscription
+    
+    # Generate invoice
+    invoice_url = generate_invoice(
+        payment_id=subscription.id,
+        member_code=member.member_id,
+        member_name=member.name,
+        member_phone=member.phone,
+        amount=subscription.amount,
+        payment_date=subscription.payment_date,
+    )
+    subscription.invoice_url = invoice_url
+    db.commit()
+    db.refresh(subscription)
+    
+    return subscription, member
 
 
 def get_subscriptions(db: Session, skip: int = 0, limit: int = 100) -> list[Subscription]:
-    return db.query(Subscription).offset(skip).limit(limit).all()
+    return db.query(Subscription).order_by(Subscription.payment_date.desc()).offset(skip).limit(limit).all()
 
 
 def get_subscription(db: Session, subscription_id: int) -> Subscription:
@@ -47,7 +73,7 @@ def get_subscription(db: Session, subscription_id: int) -> Subscription:
 
 
 def get_member_subscriptions(db: Session, member_id: int) -> list[Subscription]:
-    return db.query(Subscription).filter(Subscription.member_id == member_id).all()
+    return db.query(Subscription).filter(Subscription.member_id == member_id).order_by(Subscription.payment_date.desc()).all()
 
 
 def update_subscription(db: Session, subscription_id: int, data: SubscriptionUpdate) -> Subscription:

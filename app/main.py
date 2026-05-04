@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, members, subscriptions, payments, dashboard, visitors
+from app.routers import auth, members, subscriptions, dashboard, visitors
 
 logging.basicConfig(level=logging.INFO)
 
@@ -61,7 +61,6 @@ if os.path.exists("invoices"):
 app.include_router(auth.router)
 app.include_router(members.router)
 app.include_router(subscriptions.router)
-app.include_router(payments.router)
 app.include_router(dashboard.router)
 app.include_router(visitors.router)
 

@@ -22,8 +22,9 @@ def _enrich(sub):
 
 @router.post("/", response_model=SubscriptionResponse, status_code=201)
 def create_subscription(data: SubscriptionCreate, db: Session = Depends(get_db)):
-    sub = subscription_service.create_subscription(db, data)
-    return _enrich(sub)
+    """Create subscription with payment."""
+    subscription, member = subscription_service.create_subscription(db, data)
+    return _enrich(subscription)
 
 
 @router.get("/", response_model=List[SubscriptionResponse])
