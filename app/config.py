@@ -35,7 +35,8 @@ class Settings(BaseSettings):
             return self.DATABASE_URL
         
         if self.DB_PASSWORD:
-            return f"mysql+pymysql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DATABASE}?ssl_disabled=false&ssl_verify_cert=false&ssl_verify_identity=false"
+            # TiDB Cloud requires SSL - use proper SSL parameters
+            return f"mysql+pymysql://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DATABASE}?ssl_ca=&ssl_verify_cert=true&ssl_verify_identity=true"
         else:
             # Fallback to SQLite if no database credentials
             return "sqlite:///./gym.db"
