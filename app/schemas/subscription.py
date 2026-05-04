@@ -38,6 +38,6 @@ class SubscriptionResponse(BaseModel):
     # Payment fields merged (Optional for backward compatibility with old records)
     amount: Optional[float] = None
     payment_date: Optional[datetime] = None
-    invoice_url: Optional[str] = None
+    # invoice_url: Optional[str] = None  # REMOVED - Invoice functionality disabled
 
     model_config = ConfigDict(from_attributes=True)
