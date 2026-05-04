@@ -25,7 +25,7 @@ def _enrich(sub):
         status=sub.status,
         # Explicit mapping for payment fields (fixes undefined values)
         amount=sub.amount,
-        payment_date=sub.payment_date,
+        # payment_date=sub.payment_date,  # REMOVED
         # invoice_url=sub.invoice_url,  # REMOVED - Invoice functionality disabled
     )
     if sub.member:

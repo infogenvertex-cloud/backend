@@ -9,7 +9,7 @@ class SubscriptionCreate(BaseModel):
     plan: str
     start_date: date
     amount: float  # Payment amount merged
-    payment_date: Optional[date] = None  # Optional payment date (defaults to today if not provided)
+    # payment_date: Optional[date] = None  # REMOVED - Payment date not needed
     
     @field_validator('amount')
     @classmethod
@@ -37,7 +37,7 @@ class SubscriptionResponse(BaseModel):
     status: str
     # Payment fields merged (Optional for backward compatibility with old records)
     amount: Optional[float] = None
-    payment_date: Optional[datetime] = None
+    # payment_date: Optional[datetime] = None  # REMOVED
     # invoice_url: Optional[str] = None  # REMOVED - Invoice functionality disabled
 
     model_config = ConfigDict(from_attributes=True)
