@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import datetime
+from io import BytesIO
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -28,7 +29,28 @@ BRAND_GRAY = colors.HexColor("#64748b")
 WHITE = colors.white
 
 
+def generate_invoice_pdf(payment_id: int, member_code: str, member_name: str, member_phone: str, amount: float, payment_date) -> BytesIO:
+    """Generate invoice PDF in memory and return as BytesIO buffer."""
+    buffer = BytesIO()
+    
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        topMargin=30 * mm,
+        bottomMargin=25 * mm,
+        leftMargin=25 * mm,
+        rightMargin=25 * mm,
+    )
+
+    elements = _build_invoice_elements(payment_id, member_code, member_name, member_phone, amount, payment_date)
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return buffer
+
+
 def generate_invoice(payment_id: int, member_code: str, member_name: str, member_phone: str, amount: float, payment_date) -> str:
+    """Generate invoice and save to disk (for local development). Returns URL."""
     os.makedirs(INVOICES_DIR, exist_ok=True)
 
     filename = f"invoice_{payment_id}_{int(time.time())}.pdf"
@@ -43,6 +65,16 @@ def generate_invoice(payment_id: int, member_code: str, member_name: str, member
         rightMargin=25 * mm,
     )
 
+    elements = _build_invoice_elements(payment_id, member_code, member_name, member_phone, amount, payment_date)
+    doc.build(elements)
+
+    # Return API endpoint URL instead of static file URL
+    invoice_url = f"{settings.BASE_URL}/subscriptions/{payment_id}/invoice"
+    return invoice_url
+
+
+def _build_invoice_elements(payment_id: int, member_code: str, member_name: str, member_phone: str, amount: float, payment_date) -> list:
+    """Build the invoice PDF elements (shared between file and memory generation)."""
     styles = getSampleStyleSheet()
 
     # Custom styles
@@ -287,7 +319,4 @@ def generate_invoice(payment_id: int, member_code: str, member_name: str, member
         footer_style,
     ))
 
-    doc.build(elements)
-
-    invoice_url = f"{settings.BASE_URL}/invoices/{filename}"
-    return invoice_url
+    return elements

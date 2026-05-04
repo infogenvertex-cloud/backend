@@ -47,7 +47,7 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
     db.commit()
     db.refresh(subscription)
     
-    # Generate invoice
+    # Generate invoice (returns API endpoint URL for on-demand generation)
     invoice_url = generate_invoice(
         payment_id=subscription.id,
         member_code=member.member_id,
