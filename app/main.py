@@ -12,8 +12,12 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize database tables
 try:
-    Base.metadata.create_all(bind=engine)
-    logging.info("Database tables created successfully")
+    # Only try to create tables if we have a valid database connection
+    if settings.DB_PASSWORD:
+        Base.metadata.create_all(bind=engine)
+        logging.info("Database tables created successfully")
+    else:
+        logging.warning("Database password not set, skipping table creation")
 except Exception as e:
     logging.error(f"Error creating database tables: {e}")
     # Don't fail the app startup, just log the error
@@ -63,8 +67,17 @@ app.include_router(visitors.router)
 
 # Health check endpoint for Vercel
 @app.get("/")
+def root():
+    """Simple root endpoint that always works"""
+    return {
+        "status": "ok", 
+        "message": "Gym Management API is running",
+        "version": "1.0.0"
+    }
+
 @app.get("/health")
 def health_check():
+    """Detailed health check with database status"""
     try:
         # Test database connection
         from sqlalchemy import text
