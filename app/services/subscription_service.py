@@ -33,6 +33,7 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
     end_date = data.start_date + PLAN_DURATIONS[data.plan]
     
     # Create subscription with payment
+    from datetime import datetime
     subscription = Subscription(
         member_id=data.member_id,
         plan=data.plan,
@@ -40,6 +41,7 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
         end_date=end_date,
         status="active",
         amount=data.amount,
+        payment_date=datetime.utcnow(),  # Explicitly set payment_date
     )
     db.add(subscription)
     db.commit()
