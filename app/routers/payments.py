@@ -8,7 +8,7 @@ from app.services import payment_service
 from app.services.whatsapp_service import send_invoice
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/api/payments", tags=["Payments"], dependencies=[Depends(get_current_admin)])
+router = APIRouter(prefix="/payments", tags=["Payments"], dependencies=[Depends(get_current_admin)])
 
 
 def _enrich(payment):

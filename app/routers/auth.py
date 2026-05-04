@@ -5,7 +5,7 @@ from app.schemas.auth import LoginRequest, TokenResponse
 from app.services.auth_service import authenticate_admin, create_token
 from app.utils.deps import get_db
 
-router = APIRouter(prefix="/api/auth", tags=["Auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login", response_model=TokenResponse)

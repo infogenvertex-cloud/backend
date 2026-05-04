@@ -7,7 +7,7 @@ from app.schemas.subscription import SubscriptionCreate, SubscriptionUpdate, Sub
 from app.services import subscription_service
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/api/subscriptions", tags=["Subscriptions"], dependencies=[Depends(get_current_admin)])
+router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"], dependencies=[Depends(get_current_admin)])
 
 
 def _enrich(sub):

@@ -12,7 +12,7 @@ from app.services.visitor_service import (
 )
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/api/visitors", tags=["Visitors"])
+router = APIRouter(prefix="/visitors", tags=["Visitors"])
 
 
 @router.post("/", response_model=VisitorResponse)

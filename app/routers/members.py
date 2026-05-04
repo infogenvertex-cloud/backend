@@ -7,7 +7,7 @@ from app.schemas.member import MemberCreate, MemberUpdate, MemberResponse
 from app.services import member_service
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/api/members", tags=["Members"], dependencies=[Depends(get_current_admin)])
+router = APIRouter(prefix="/members", tags=["Members"], dependencies=[Depends(get_current_admin)])
 
 
 @router.post("/", response_model=MemberResponse, status_code=201)

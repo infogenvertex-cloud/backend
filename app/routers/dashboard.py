@@ -10,7 +10,7 @@ from app.schemas.dashboard import DashboardStats
 from app.schemas.payment import PaymentResponse
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_admin)])
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_admin)])
 
 
 @router.get("/", response_model=DashboardStats)
