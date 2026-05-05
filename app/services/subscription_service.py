@@ -21,32 +21,50 @@ PLAN_DURATIONS = {
 
 def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscription, Member]:
     """Create subscription with payment tracking."""
-    if data.plan not in PLAN_DURATIONS:
-        raise HTTPException(status_code=400, detail=f"Invalid plan. Choose from: {list(PLAN_DURATIONS.keys())}")
+    try:
+        if data.plan not in PLAN_DURATIONS:
+            raise HTTPException(status_code=400, detail=f"Invalid plan. Choose from: {list(PLAN_DURATIONS.keys())}")
 
-    # Verify member exists
-    member = db.query(Member).filter(Member.id == data.member_id).first()
-    if not member:
-        raise HTTPException(status_code=404, detail="Member not found")
+        # Verify member exists
+        member = db.query(Member).filter(Member.id == data.member_id).first()
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
 
-    # Calculate end date
-    end_date = data.start_date + PLAN_DURATIONS[data.plan]
-    
-    # Create subscription with payment tracking
-    subscription = Subscription(
-        member_id=data.member_id,
-        plan=data.plan,
-        start_date=data.start_date,
-        end_date=end_date,
-        status="active",
-        amount=data.amount,
-        payment_date=data.payment_date or datetime.utcnow(),
-    )
-    db.add(subscription)
-    db.commit()
-    db.refresh(subscription)
-    
-    return subscription, member
+        # Calculate end date
+        end_date = data.start_date + PLAN_DURATIONS[data.plan]
+        
+        # Parse payment_date if it's a string, otherwise use provided datetime or current time
+        if data.payment_date:
+            if isinstance(data.payment_date, str):
+                payment_date = datetime.fromisoformat(data.payment_date.replace('Z', '+00:00'))
+            else:
+                payment_date = data.payment_date
+        else:
+            payment_date = datetime.utcnow()
+        
+        # Create subscription with payment tracking
+        subscription = Subscription(
+            member_id=data.member_id,
+            plan=data.plan,
+            start_date=data.start_date,
+            end_date=end_date,
+            status="active",
+            amount=data.amount,
+            payment_date=payment_date,
+        )
+        db.add(subscription)
+        db.commit()
+        db.refresh(subscription)
+        
+        return subscription, member
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        import logging
+        logging.error(f"Error creating subscription: {str(e)}")
+        logging.error(f"Data: member_id={data.member_id}, plan={data.plan}, amount={data.amount}, payment_date={data.payment_date}")
+        raise HTTPException(status_code=500, detail=f"Error creating subscription: {str(e)}")
 
 
 def get_subscriptions(db: Session, skip: int = 0, limit: int = 100) -> list[Subscription]:
