@@ -18,7 +18,7 @@ def test_connection():
     try:
         # Create engine
         print("⏳ Creating database engine...")
-        engine = create_engine(settings.DATABASE_URL, echo=False)
+        engine = create_engine(settings.database_url, echo=False)
         
         # Test connection
         print("⏳ Connecting to TiDB...")
@@ -64,7 +64,7 @@ def test_connection():
         print(f"Error: {str(e)}")
         print()
         print("🔧 Troubleshooting:")
-        print("1. Check your DATABASE_URL in .env file")
+        print("1. Check your DB_* or DATABASE_URL settings in .env file")
         print("2. Verify TiDB cluster is running in TiDB Cloud")
         print("3. Check username and password are correct")
         print("4. Ensure 'gym_db' database exists")
