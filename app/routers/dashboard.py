@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.models.member import Member
 from app.models.subscription import Subscription
-from app.models.payment import Payment
+# from app.models.payment import Payment  # REMOVED - Merged into Subscription
 from app.schemas.dashboard import DashboardStats
-from app.schemas.payment import PaymentResponse
+from app.schemas.subscription import SubscriptionResponse  # Use SubscriptionResponse instead of PaymentResponse
 from app.utils.deps import get_db, get_current_admin
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_admin)])
@@ -35,20 +35,22 @@ def get_dashboard(db: Session = Depends(get_db)):
         .count()
     )
 
+    # Get recent subscriptions with payments (amount is not null)
     recent_payments = (
-        db.query(Payment)
-        .order_by(Payment.payment_date.desc())
+        db.query(Subscription)
+        .filter(Subscription.amount.isnot(None))  # Only subscriptions with payment
+        .order_by(Subscription.start_date.desc())  # Order by start date
         .limit(10)
         .all()
     )
 
     enriched_payments = []
-    for p in recent_payments:
-        resp = PaymentResponse.model_validate(p)
-        if p.member:
-            resp.member_code = p.member.member_id
-            resp.member_name = p.member.name
-            resp.member_phone = p.member.phone
+    for sub in recent_payments:
+        resp = SubscriptionResponse.model_validate(sub, from_attributes=True)
+        if sub.member:
+            resp.member_code = sub.member.member_id
+            resp.member_name = sub.member.name
+            resp.member_phone = sub.member.phone
         enriched_payments.append(resp)
 
     return DashboardStats(
