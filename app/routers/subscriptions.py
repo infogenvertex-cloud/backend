@@ -22,6 +22,8 @@ def _enrich(sub):
         start_date=sub.start_date,
         end_date=sub.end_date,
         status=sub.status,
+        amount=sub.amount,
+        payment_date=sub.payment_date,
     )
     if sub.member:
         resp.member_code = sub.member.member_id
@@ -32,7 +34,7 @@ def _enrich(sub):
 
 @router.post("/", response_model=SubscriptionResponse, status_code=201)
 def create_subscription(data: SubscriptionCreate, db: Session = Depends(get_db)):
-    """Create subscription."""
+    """Create subscription with payment tracking."""
     subscription, member = subscription_service.create_subscription(db, data)
     return _enrich(subscription)
 

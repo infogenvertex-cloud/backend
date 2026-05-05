@@ -15,5 +15,9 @@ class Subscription(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     status = Column(String(20), default="active")
+    
+    # Payment tracking fields
+    amount = Column(Float, nullable=False)
+    payment_date = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     member = relationship("Member", back_populates="subscriptions")

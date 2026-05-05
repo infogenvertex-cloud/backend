@@ -8,6 +8,15 @@ class SubscriptionCreate(BaseModel):
     member_id: int
     plan: str
     start_date: date
+    amount: float
+    payment_date: Optional[datetime] = None
+    
+    @field_validator('amount')
+    @classmethod
+    def validate_amount(cls, v):
+        if v is None or v <= 0:
+            raise ValueError('Amount must be greater than 0')
+        return v
 
 
 class SubscriptionUpdate(BaseModel):
@@ -26,5 +35,7 @@ class SubscriptionResponse(BaseModel):
     start_date: date
     end_date: date
     status: str
+    amount: float
+    payment_date: datetime
 
     model_config = ConfigDict(from_attributes=True)

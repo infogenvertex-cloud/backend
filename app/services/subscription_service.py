@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException
@@ -20,7 +20,7 @@ PLAN_DURATIONS = {
 
 
 def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscription, Member]:
-    """Create subscription."""
+    """Create subscription with payment tracking."""
     if data.plan not in PLAN_DURATIONS:
         raise HTTPException(status_code=400, detail=f"Invalid plan. Choose from: {list(PLAN_DURATIONS.keys())}")
 
@@ -32,13 +32,15 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
     # Calculate end date
     end_date = data.start_date + PLAN_DURATIONS[data.plan]
     
-    # Create subscription
+    # Create subscription with payment tracking
     subscription = Subscription(
         member_id=data.member_id,
         plan=data.plan,
         start_date=data.start_date,
         end_date=end_date,
         status="active",
+        amount=data.amount,
+        payment_date=data.payment_date or datetime.utcnow(),
     )
     db.add(subscription)
     db.commit()
@@ -48,7 +50,7 @@ def create_subscription(db: Session, data: SubscriptionCreate) -> tuple[Subscrip
 
 
 def get_subscriptions(db: Session, skip: int = 0, limit: int = 100) -> list[Subscription]:
-    return db.query(Subscription).order_by(Subscription.id.desc()).offset(skip).limit(limit).all()
+    return db.query(Subscription).order_by(Subscription.payment_date.desc()).offset(skip).limit(limit).all()
 
 
 def get_subscription(db: Session, subscription_id: int) -> Subscription:
@@ -59,7 +61,7 @@ def get_subscription(db: Session, subscription_id: int) -> Subscription:
 
 
 def get_member_subscriptions(db: Session, member_id: int) -> list[Subscription]:
-    return db.query(Subscription).filter(Subscription.member_id == member_id).order_by(Subscription.id.desc()).all()
+    return db.query(Subscription).filter(Subscription.member_id == member_id).order_by(Subscription.payment_date.desc()).all()
 
 
 def update_subscription(db: Session, subscription_id: int, data: SubscriptionUpdate) -> Subscription:
