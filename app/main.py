@@ -1,7 +1,7 @@
 import logging
 import os
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -12,7 +12,6 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize database tables
 try:
-    # Only try to create tables if we have a valid database connection
     if settings.DB_PASSWORD:
         Base.metadata.create_all(bind=engine)
         logging.info("Database tables created successfully")
@@ -20,39 +19,17 @@ try:
         logging.warning("Database password not set, skipping table creation")
 except Exception as e:
     logging.error(f"Error creating database tables: {e}")
-    # Don't fail the app startup, just log the error
     pass
 
 app = FastAPI(title="Gym Management System")
 
-# CORS Configuration - Allow frontend domains
-allowed_origins = [
-    "http://localhost:5006",
-    "http://localhost:5007",
-    "http://localhost:3000",
-    "http://localhost:5173",  # Vite default port
-    "https://frontend-three-swart-2tke12jw3z.vercel.app",
-    "https://frontend-three-swart-21.vercel.app",
-    "https://frontend-three-swart-2tke12jw3z.vercel.app",  # Alternative frontend URL
-]
-
-# Add production frontend URL from environment variable
-frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
-    allowed_origins.append(frontend_url)
-
-# For Vercel deployment, be more permissive with CORS
-if os.getenv("VERCEL"):  # Vercel sets this environment variable
-    allowed_origins.extend([
-        "https://*.vercel.app",
-        "https://frontend-three-swart-2tke12jw3z.vercel.app",
-        "https://frontend-three-swart-21.vercel.app"
-    ])
-
+# Allow all origins — app uses Bearer tokens, not cookies, so credentials mode is off.
+# allow_credentials=True + allow_origins=["*"] is invalid per the CORS spec and raises
+# a ValueError in Starlette 0.38+ (used by FastAPI 0.115+), crashing the Vercel function.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if os.getenv("VERCEL") else allowed_origins,  # Allow all origins in Vercel for now
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -67,11 +44,6 @@ app.include_router(members.router)
 app.include_router(subscriptions.router)
 app.include_router(dashboard.router)
 app.include_router(visitors.router)
-
-# OPTIONS handler for CORS preflight requests
-@app.options("/{full_path:path}")
-async def options_handler(request: Request):
-    return {}
 
 # Health check endpoint for Vercel
 @app.get("/")
