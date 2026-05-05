@@ -30,7 +30,9 @@ allowed_origins = [
     "http://localhost:5006",
     "http://localhost:5007", 
     "http://localhost:3000",
-    "https://frontend-three-swart-2tke12jw3z.vercel.app",  # Add your frontend URL
+    "http://localhost:5173",  # Vite default port
+    "https://frontend-three-swart-2tke12jw3z.vercel.app",
+    "https://frontend-three-swart-21.vercel.app",  # Alternative frontend URL
 ]
 
 # Add production frontend URL from environment variable
@@ -42,7 +44,8 @@ if frontend_url:
 if os.getenv("VERCEL"):  # Vercel sets this environment variable
     allowed_origins.extend([
         "https://*.vercel.app",
-        "https://frontend-three-swart-2tke12jw3z.vercel.app"
+        "https://frontend-three-swart-2tke12jw3z.vercel.app",
+        "https://frontend-three-swart-21.vercel.app"
     ])
 
 app.add_middleware(
