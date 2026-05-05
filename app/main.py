@@ -25,33 +25,10 @@ except Exception as e:
 
 app = FastAPI(title="Gym Management System")
 
-# CORS Configuration - Allow frontend domains
-allowed_origins = [
-    "http://localhost:5006",
-    "http://localhost:5007", 
-    "http://localhost:3000",
-    "http://localhost:5173",  # Vite default port
-    "https://frontend-three-swart-2tke12jw3z.vercel.app",
-    "https://frontend-three-swart-21.vercel.app",
-    "https://frontend-three-swart-2tke12jw3z.vercel.app",  # Alternative frontend URL
-]
-
-# Add production frontend URL from environment variable
-frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
-    allowed_origins.append(frontend_url)
-
-# For Vercel deployment, be more permissive with CORS
-if os.getenv("VERCEL"):  # Vercel sets this environment variable
-    allowed_origins.extend([
-        "https://*.vercel.app",
-        "https://frontend-three-swart-2tke12jw3z.vercel.app",
-        "https://frontend-three-swart-21.vercel.app"
-    ])
-
+# CORS Configuration - Must be added before routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if os.getenv("VERCEL") else allowed_origins,  # Allow all origins in Vercel for now
+    allow_origins=["https://frontend-three-swart-2tke12jw3z.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

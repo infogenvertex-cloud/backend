@@ -43,18 +43,32 @@ def create_subscription(data: SubscriptionCreate, db: Session = Depends(get_db))
 def list_subscriptions(
     member_id: int = None, 
     skip: int = 0, 
-    limit: int = 100, 
+    limit: int = 20, 
     db: Session = Depends(get_db)
 ):
     """
     List subscriptions. If member_id is provided, returns subscriptions for that member only.
-    Otherwise returns all subscriptions.
+    Otherwise returns all subscriptions with pagination (default 20 per page).
     """
     if member_id is not None:
         subs = subscription_service.get_member_subscriptions(db, member_id)
     else:
         subs = subscription_service.get_subscriptions(db, skip, limit)
     return [_enrich(s) for s in subs]
+
+
+@router.get("/grouped", response_model=dict)
+def list_subscriptions_grouped(
+    page: int = 1,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    """
+    List subscriptions grouped by member with pagination.
+    Returns grouped data with total count for pagination.
+    """
+    result = subscription_service.get_subscriptions_grouped(db, page, limit)
+    return result
 
 
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)
