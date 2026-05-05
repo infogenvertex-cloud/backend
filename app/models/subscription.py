@@ -15,11 +15,5 @@ class Subscription(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     status = Column(String(20), default="active")
-    
-    # Payment fields (merged from Payment model)
-    # Made nullable for backward compatibility with old records
-    amount = Column(Float, nullable=True)
-    # payment_date = Column(DateTime, default=datetime.utcnow, nullable=True)  # REMOVED
-    # invoice_url = Column(String(255), nullable=True)  # REMOVED - Invoice functionality disabled
 
     member = relationship("Member", back_populates="subscriptions")

@@ -15,7 +15,6 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"], dependencies
 
 def _enrich(sub):
     """Add member details from the related member."""
-    # Explicit mapping to ensure all fields are properly loaded (fixes undefined issue)
     resp = SubscriptionResponse(
         id=sub.id,
         member_id=sub.member_id,
@@ -23,10 +22,6 @@ def _enrich(sub):
         start_date=sub.start_date,
         end_date=sub.end_date,
         status=sub.status,
-        # Explicit mapping for payment fields (fixes undefined values)
-        amount=sub.amount,
-        # payment_date=sub.payment_date,  # REMOVED
-        # invoice_url=sub.invoice_url,  # REMOVED - Invoice functionality disabled
     )
     if sub.member:
         resp.member_code = sub.member.member_id
@@ -37,7 +32,7 @@ def _enrich(sub):
 
 @router.post("/", response_model=SubscriptionResponse, status_code=201)
 def create_subscription(data: SubscriptionCreate, db: Session = Depends(get_db)):
-    """Create subscription with payment."""
+    """Create subscription."""
     subscription, member = subscription_service.create_subscription(db, data)
     return _enrich(subscription)
 
