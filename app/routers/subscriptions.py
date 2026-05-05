@@ -43,14 +43,20 @@ def create_subscription(data: SubscriptionCreate, db: Session = Depends(get_db))
 
 
 @router.get("/", response_model=List[SubscriptionResponse])
-def list_subscriptions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    subs = subscription_service.get_subscriptions(db, skip, limit)
-    return [_enrich(s) for s in subs]
-
-
-@router.get("/member/{member_id}", response_model=List[SubscriptionResponse])
-def get_member_subscriptions(member_id: int, db: Session = Depends(get_db)):
-    subs = subscription_service.get_member_subscriptions(db, member_id)
+def list_subscriptions(
+    member_id: int = None, 
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db)
+):
+    """
+    List subscriptions. If member_id is provided, returns subscriptions for that member only.
+    Otherwise returns all subscriptions.
+    """
+    if member_id is not None:
+        subs = subscription_service.get_member_subscriptions(db, member_id)
+    else:
+        subs = subscription_service.get_subscriptions(db, skip, limit)
     return [_enrich(s) for s in subs]
 
 
