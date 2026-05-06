@@ -31,7 +31,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin"],
 )
 
 # Only mount static files if directory exists (won't exist in Vercel)

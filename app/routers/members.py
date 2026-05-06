@@ -27,16 +27,16 @@ def list_members(
     return member_service.get_members(db, skip, limit)
 
 
-@router.get("/{member_id}", response_model=MemberResponse)
+@router.get("/{member_id:int}", response_model=MemberResponse)
 def get_member(member_id: int, db: Session = Depends(get_db)):
     return member_service.get_member(db, member_id)
 
 
-@router.put("/{member_id}", response_model=MemberResponse)
+@router.put("/{member_id:int}", response_model=MemberResponse)
 def update_member(member_id: int, data: MemberUpdate, db: Session = Depends(get_db)):
     return member_service.update_member(db, member_id, data)
 
 
-@router.delete("/{member_id}", status_code=204)
+@router.delete("/{member_id:int}", status_code=204)
 def delete_member(member_id: int, db: Session = Depends(get_db)):
     member_service.delete_member(db, member_id)

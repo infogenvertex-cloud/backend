@@ -71,13 +71,13 @@ def list_subscriptions_grouped(
     return result
 
 
-@router.get("/{subscription_id}", response_model=SubscriptionResponse)
+@router.get("/{subscription_id:int}", response_model=SubscriptionResponse)
 def get_subscription(subscription_id: int, db: Session = Depends(get_db)):
     sub = subscription_service.get_subscription(db, subscription_id)
     return _enrich(sub)
 
 
-@router.put("/{subscription_id}", response_model=SubscriptionResponse)
+@router.put("/{subscription_id:int}", response_model=SubscriptionResponse)
 def update_subscription(subscription_id: int, data: SubscriptionUpdate, db: Session = Depends(get_db)):
     sub = subscription_service.update_subscription(db, subscription_id, data)
     return _enrich(sub)
