@@ -3,18 +3,21 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.models.admin import Admin
 from app.models.member import Member
 from app.models.subscription import Subscription
-# from app.models.payment import Payment  # REMOVED - Merged into Subscription
 from app.schemas.dashboard import DashboardStats
-from app.schemas.subscription import SubscriptionResponse  # Use SubscriptionResponse instead of PaymentResponse
+from app.schemas.subscription import SubscriptionResponse
 from app.utils.deps import get_db, get_current_admin
 
-router = APIRouter(prefix="/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_admin)])
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
 @router.get("/", response_model=DashboardStats)
-def get_dashboard(db: Session = Depends(get_db)):
+def get_dashboard(
+    db: Session = Depends(get_db),
+    _: Admin = Depends(get_current_admin),
+):
     total_members = db.query(Member).count()
 
     active_members = (
