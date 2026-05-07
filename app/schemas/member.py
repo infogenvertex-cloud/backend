@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict
 
@@ -13,6 +13,7 @@ class MemberCreate(BaseModel):
 class MemberUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
+    join_date: Optional[date] = None
 
 
 class MemberResponse(BaseModel):
@@ -21,5 +22,10 @@ class MemberResponse(BaseModel):
     name: str
     phone: str
     join_date: date
+    
+    # Optional payment summary
+    total_payments: Optional[float] = None
+    last_payment_date: Optional[date] = None
+    payment_count: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)

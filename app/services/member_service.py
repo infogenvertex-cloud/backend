@@ -1,4 +1,6 @@
+from datetime import date
 from __future__ import annotations
+import logging
 
 from fastapi import HTTPException
 from sqlalchemy import func, or_
@@ -6,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.models.member import Member
 from app.schemas.member import MemberCreate, MemberUpdate
+
+logger = logging.getLogger(__name__)
 
 
 def _generate_member_id(db: Session) -> str:
@@ -15,17 +19,35 @@ def _generate_member_id(db: Session) -> str:
 
 
 def create_member(db: Session, data: MemberCreate) -> Member:
+    logger.info("🏗️ Member service: create_member called")
+    logger.info(f"📋 Input data: {data}")
+    
     member_id = _generate_member_id(db)
+    logger.info(f"🆔 Generated member_id: {member_id}")
+    
+    # Handle join_date
+    final_join_date = data.join_date or date.today()
+    logger.info(f"📅 Join date processing: original={data.join_date}, final={final_join_date}")
+    
     member = Member(
         member_id=member_id,
         name=data.name,
         phone=data.phone,
-        join_date=data.join_date,
+        join_date=final_join_date,
     )
-    db.add(member)
-    db.commit()
-    db.refresh(member)
-    return member
+    
+    logger.info(f"👤 Creating member object: {member.__dict__}")
+    
+    try:
+        db.add(member)
+        db.commit()
+        db.refresh(member)
+        logger.info(f"✅ Member saved to database: {member.__dict__}")
+        return member
+    except Exception as e:
+        logger.error(f"❌ Database error: {str(e)}")
+        db.rollback()
+        raise
 
 
 def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:

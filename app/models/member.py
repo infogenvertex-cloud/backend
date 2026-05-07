@@ -15,4 +15,4 @@ class Member(Base):
     phone = Column(String(15), nullable=False, unique=True)
     join_date = Column(Date, default=date.today)
 
-    subscriptions = relationship("Subscription", back_populates="member", cascade="all, delete-orphan")
+    payments = relationship("Payment", back_populates="member", cascade="all, delete-orphan")
