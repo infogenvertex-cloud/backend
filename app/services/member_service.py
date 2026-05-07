@@ -92,19 +92,19 @@ def get_member(db: Session, member_id: int) -> Member:
 def update_member(db: Session, member_id: int, data: MemberUpdate) -> Member:
     logger.info(f"🔄 Updating member {member_id} in service")
     logger.info(f"📋 Update data received: {data}")
-    logger.info(f"🔍 Update data dict: {data.model_dump()}")
-    logger.info(f"🔍 Update data (exclude_unset): {data.model_dump(exclude_unset=True)}")
     
     member = get_member(db, member_id)
     logger.info(f"👤 Current member before update: {member.__dict__}")
     
-    update_data = data.model_dump(exclude_unset=True)
-    logger.info(f"📝 Fields to update: {update_data}")
+    # Get all fields that were explicitly provided (not None and not unset)
+    update_data = data.model_dump(exclude_unset=True, exclude_none=False)
+    logger.info(f"📝 Fields to update (exclude_unset): {update_data}")
     
+    # Update each field
     for key, value in update_data.items():
         old_value = getattr(member, key, None)
         setattr(member, key, value)
-        logger.info(f"🔄 Updated {key}: {old_value} → {value}")
+        logger.info(f"🔄 Updated {key}: {old_value} → {value} (type: {type(value)})")
     
     logger.info(f"👤 Member after setattr: {member.__dict__}")
     
@@ -113,9 +113,12 @@ def update_member(db: Session, member_id: int, data: MemberUpdate) -> Member:
         logger.info("✅ Database commit successful")
         db.refresh(member)
         logger.info(f"👤 Member after refresh: {member.__dict__}")
+        logger.info(f"📅 Final join_date value: {member.join_date} (type: {type(member.join_date)})")
         return member
     except Exception as e:
         logger.error(f"❌ Database commit failed: {str(e)}")
+        logger.error(f"❌ Exception type: {type(e)}")
+        logger.error(f"❌ Exception args: {e.args}")
         db.rollback()
         raise
 

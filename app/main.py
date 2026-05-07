@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, members, payments, dashboard, visitors, expiring
+from app.routers import auth, members, payments, dashboard, visitors, expiring, revenue
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,6 +45,7 @@ app.include_router(payments.router)
 app.include_router(dashboard.router)
 app.include_router(visitors.router)
 app.include_router(expiring.router)
+app.include_router(revenue.router)
 
 # Health check endpoint for Vercel
 @app.get("/")

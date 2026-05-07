@@ -78,16 +78,21 @@ def update_member(
 ):
     logger.info(f"🔄 Updating member {member_id} - Backend API called")
     logger.info(f"📤 Received update data: {data}")
+    logger.info(f"📤 Data model_dump: {data.model_dump()}")
+    logger.info(f"📤 Data model_dump(exclude_unset=True): {data.model_dump(exclude_unset=True)}")
     logger.info(f"🔍 Join date details: {data.join_date} (type: {type(data.join_date)})")
+    logger.info(f"🔍 Name: {data.name}, Phone: {data.phone}")
     
     try:
         result = member_service.update_member(db, member_id, data)
         logger.info(f"✅ Member updated successfully: {result.member_id}")
-        logger.info(f"📋 Updated member details: ID={result.id}, join_date={result.join_date}")
+        logger.info(f"📋 Updated member details: ID={result.id}, name={result.name}, phone={result.phone}, join_date={result.join_date}")
         return result
     except Exception as e:
         logger.error(f"❌ Error updating member {member_id}: {str(e)}")
         logger.error(f"📋 Failed data: {data}")
+        import traceback
+        logger.error(f"📋 Traceback: {traceback.format_exc()}")
         raise
 
 
