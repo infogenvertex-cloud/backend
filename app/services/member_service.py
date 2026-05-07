@@ -1,5 +1,6 @@
-from datetime import date
 from __future__ import annotations
+
+from datetime import date
 import logging
 
 from fastapi import HTTPException
@@ -89,13 +90,34 @@ def get_member(db: Session, member_id: int) -> Member:
 
 
 def update_member(db: Session, member_id: int, data: MemberUpdate) -> Member:
+    logger.info(f"🔄 Updating member {member_id} in service")
+    logger.info(f"📋 Update data received: {data}")
+    logger.info(f"🔍 Update data dict: {data.model_dump()}")
+    logger.info(f"🔍 Update data (exclude_unset): {data.model_dump(exclude_unset=True)}")
+    
     member = get_member(db, member_id)
+    logger.info(f"👤 Current member before update: {member.__dict__}")
+    
     update_data = data.model_dump(exclude_unset=True)
+    logger.info(f"📝 Fields to update: {update_data}")
+    
     for key, value in update_data.items():
+        old_value = getattr(member, key, None)
         setattr(member, key, value)
-    db.commit()
-    db.refresh(member)
-    return member
+        logger.info(f"🔄 Updated {key}: {old_value} → {value}")
+    
+    logger.info(f"👤 Member after setattr: {member.__dict__}")
+    
+    try:
+        db.commit()
+        logger.info("✅ Database commit successful")
+        db.refresh(member)
+        logger.info(f"👤 Member after refresh: {member.__dict__}")
+        return member
+    except Exception as e:
+        logger.error(f"❌ Database commit failed: {str(e)}")
+        db.rollback()
+        raise
 
 
 def delete_member(db: Session, member_id: int) -> None:
