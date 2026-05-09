@@ -20,14 +20,21 @@ logger = logging.getLogger(__name__)
 
 def calculate_expiry_date(payment_date: datetime, plan: str) -> datetime:
     """Calculate when a subscription expires based on plan"""
-    plan_durations = {
-        "1_month": 30,
-        "3_month": 90,
-        "6_month": 180,
-        "12_month": 365,
-    }
+    # Extract number from plan (e.g., "30_day" -> 30, "90_day" -> 90)
+    try:
+        days = int(plan.split("_")[0])
+    except (ValueError, IndexError):
+        # Fallback for old format or invalid plans
+        # Try to handle old month format (e.g., "1_month" -> 30 days)
+        if "_month" in plan:
+            try:
+                months = int(plan.split("_")[0])
+                days = months * 30  # Convert months to days
+            except (ValueError, IndexError):
+                days = 30  # Default to 30 days
+        else:
+            days = 30  # Default to 30 days
     
-    days = plan_durations.get(plan, 30)
     return payment_date + timedelta(days=days)
 
 
