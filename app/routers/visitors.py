@@ -30,16 +30,27 @@ def add_visitor(
 def list_visitors(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    search: str = Query(None, description="Search by name or mobile number"),
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin)
 ):
     skip = (page - 1) * page_size
     
-    # Get paginated visitors
-    visitors = db.query(Visitor).order_by(Visitor.visited_at.desc()).offset(skip).limit(page_size).all()
+    # Build query with search filter
+    query = db.query(Visitor)
     
-    # Get total count
-    total = db.query(Visitor).count()
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (Visitor.name.ilike(search_term)) | 
+            (Visitor.mobile.ilike(search_term))
+        )
+    
+    # Get total count with filters
+    total = query.count()
+    
+    # Get paginated visitors
+    visitors = query.order_by(Visitor.visited_at.desc()).offset(skip).limit(page_size).all()
     
     return PaginatedResponse.create(
         items=[VisitorResponse.model_validate(v, from_attributes=True) for v in visitors],
