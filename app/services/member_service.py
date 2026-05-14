@@ -52,7 +52,7 @@ def create_member(db: Session, data: MemberCreate) -> Member:
 
 
 def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:
-    return db.query(Member).offset(skip).limit(limit).all()
+    return db.query(Member).order_by(Member.join_date.desc()).offset(skip).limit(limit).all()
 
 
 def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> list[Member]:
@@ -76,6 +76,7 @@ def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> 
                 Member.member_id.ilike(search_term)
             )
         )
+        .order_by(Member.join_date.desc())
         .offset(skip)
         .limit(limit)
         .all()
