@@ -23,18 +23,27 @@ except Exception as e:
 
 app = FastAPI(title="Gym Management System")
 
-# CORS Configuration - Allow frontend to access the API
+# CORS Configuration - Allow all origins for API access
+# Using wildcard with credentials=False is the safest approach for Vercel
+origins = [
+    "https://frontend-three-swart-2tke12jw3z.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5006",
+    "http://localhost:3000",
+]
+
+# Add wildcard support for Vercel preview deployments
+if os.getenv("VERCEL_ENV") == "production":
+    origins.append("https://*.vercel.app")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://frontend-three-swart-2tke12jw3z.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:5006",
-        "http://localhost:3000",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 # Only mount static files if directory exists (won't exist in Vercel)
