@@ -23,15 +23,18 @@ except Exception as e:
 
 app = FastAPI(title="Gym Management System")
 
-# Allow all origins — app uses Bearer tokens, not cookies, so credentials mode is off.
-# allow_credentials=True + allow_origins=["*"] is invalid per the CORS spec and raises
-# a ValueError in Starlette 0.38+ (used by FastAPI 0.115+), crashing the Vercel function.
+# CORS Configuration - Allow frontend to access the API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "https://frontend-three-swart-2tke12jw3z.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:5006",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "Origin"],
+    allow_headers=["*"],
 )
 
 # Only mount static files if directory exists (won't exist in Vercel)
