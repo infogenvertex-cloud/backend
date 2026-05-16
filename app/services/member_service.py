@@ -4,7 +4,7 @@ from datetime import date
 import logging
 
 from fastapi import HTTPException
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case
 from sqlalchemy.orm import Session
 
 from app.models.member import Member
@@ -53,9 +53,15 @@ def create_member(db: Session, data: MemberCreate) -> Member:
 
 def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:
     # Sort by last_payment_date first (nulls last), then by join_date
+    # Using CASE to handle NULL values for MySQL/TiDB compatibility
+    from sqlalchemy import case
     return (
         db.query(Member)
-        .order_by(Member.last_payment_date.desc().nullslast(), Member.join_date.desc())
+        .order_by(
+            case((Member.last_payment_date.is_(None), 1), else_=0),
+            Member.last_payment_date.desc(),
+            Member.join_date.desc()
+        )
         .offset(skip)
         .limit(limit)
         .all()
@@ -75,6 +81,7 @@ def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> 
     # Search across name, phone, and member_id using OR condition
     # This uses database indexes for efficient searching
     # Sort by last_payment_date first (nulls last), then by join_date
+    from sqlalchemy import case
     return (
         db.query(Member)
         .filter(
@@ -84,7 +91,11 @@ def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> 
                 Member.member_id.ilike(search_term)
             )
         )
-        .order_by(Member.last_payment_date.desc().nullslast(), Member.join_date.desc())
+        .order_by(
+            case((Member.last_payment_date.is_(None), 1), else_=0),
+            Member.last_payment_date.desc(),
+            Member.join_date.desc()
+        )
         .offset(skip)
         .limit(limit)
         .all()
