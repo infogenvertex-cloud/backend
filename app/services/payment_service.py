@@ -16,14 +16,20 @@ def create_payment(db: Session, data: PaymentCreate) -> Payment:
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")
     
+    payment_date = data.payment_date or datetime.utcnow()
+    
     payment = Payment(
         member_id=data.member_id,
         amount=data.amount,
         plan=data.plan,
         notes=data.notes,
-        payment_date=data.payment_date or datetime.utcnow()
+        payment_date=payment_date
     )
     db.add(payment)
+    
+    # Update member's last_payment_date to sort them to the top
+    member.last_payment_date = payment_date
+    
     db.commit()
     db.refresh(payment)
     return payment

@@ -52,7 +52,14 @@ def create_member(db: Session, data: MemberCreate) -> Member:
 
 
 def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:
-    return db.query(Member).order_by(Member.join_date.desc()).offset(skip).limit(limit).all()
+    # Sort by last_payment_date first (nulls last), then by join_date
+    return (
+        db.query(Member)
+        .order_by(Member.last_payment_date.desc().nullslast(), Member.join_date.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> list[Member]:
@@ -67,6 +74,7 @@ def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> 
     
     # Search across name, phone, and member_id using OR condition
     # This uses database indexes for efficient searching
+    # Sort by last_payment_date first (nulls last), then by join_date
     return (
         db.query(Member)
         .filter(
@@ -76,7 +84,7 @@ def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> 
                 Member.member_id.ilike(search_term)
             )
         )
-        .order_by(Member.join_date.desc())
+        .order_by(Member.last_payment_date.desc().nullslast(), Member.join_date.desc())
         .offset(skip)
         .limit(limit)
         .all()
