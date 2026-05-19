@@ -51,10 +51,29 @@ def create_member(db: Session, data: MemberCreate) -> Member:
         raise
 
 
-def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:
+def get_members(db: Session, skip: int = 0, limit: int = 100, month: str = None) -> list[Member]:
     # Sort by join_date (most recent first)
+    query = db.query(Member)
+    
+    # Apply month filter if provided
+    if month:
+        try:
+            # Parse month in YYYY-MM format
+            year, month_num = month.split('-')
+            year = int(year)
+            month_num = int(month_num)
+            
+            # Filter by year and month
+            query = query.filter(
+                func.year(Member.join_date) == year,
+                func.month(Member.join_date) == month_num
+            )
+        except (ValueError, AttributeError):
+            # Invalid month format, ignore filter
+            pass
+    
     return (
-        db.query(Member)
+        query
         .order_by(Member.join_date.desc())
         .offset(skip)
         .limit(limit)
@@ -62,28 +81,46 @@ def get_members(db: Session, skip: int = 0, limit: int = 100) -> list[Member]:
     )
 
 
-def search_members(db: Session, query: str, skip: int = 0, limit: int = 100) -> list[Member]:
+def search_members(db: Session, query: str, skip: int = 0, limit: int = 100, month: str = None) -> list[Member]:
     """
     Search members by name, phone, or member_id.
     Uses indexed columns for efficient searching, sorted by join date.
     """
     if not query or len(query.strip()) == 0:
-        return get_members(db, skip, limit)
+        return get_members(db, skip, limit, month)
     
     search_term = f"%{query.strip()}%"
     
     # Search across name, phone, and member_id using OR condition
     # This uses database indexes for efficient searching
     # Sort by join_date (most recent first)
-    return (
-        db.query(Member)
-        .filter(
-            or_(
-                Member.name.ilike(search_term),
-                Member.phone.ilike(search_term),
-                Member.member_id.ilike(search_term)
-            )
+    db_query = db.query(Member).filter(
+        or_(
+            Member.name.ilike(search_term),
+            Member.phone.ilike(search_term),
+            Member.member_id.ilike(search_term)
         )
+    )
+    
+    # Apply month filter if provided
+    if month:
+        try:
+            # Parse month in YYYY-MM format
+            year, month_num = month.split('-')
+            year = int(year)
+            month_num = int(month_num)
+            
+            # Filter by year and month
+            db_query = db_query.filter(
+                func.year(Member.join_date) == year,
+                func.month(Member.join_date) == month_num
+            )
+        except (ValueError, AttributeError):
+            # Invalid month format, ignore filter
+            pass
+    
+    return (
+        db_query
         .order_by(Member.join_date.desc())
         .offset(skip)
         .limit(limit)
@@ -136,3 +173,27 @@ def delete_member(db: Session, member_id: int) -> None:
     member = get_member(db, member_id)
     db.delete(member)
     db.commit()
+
+
+def get_members_count(db: Session, month: str = None) -> int:
+    """Get total count of members with optional month filter"""
+    query = db.query(Member)
+    
+    # Apply month filter if provided
+    if month:
+        try:
+            # Parse month in YYYY-MM format
+            year, month_num = month.split('-')
+            year = int(year)
+            month_num = int(month_num)
+            
+            # Filter by year and month
+            query = query.filter(
+                func.year(Member.join_date) == year,
+                func.month(Member.join_date) == month_num
+            )
+        except (ValueError, AttributeError):
+            # Invalid month format, ignore filter
+            pass
+    
+    return query.count()

@@ -40,17 +40,18 @@ def list_members(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     search: Optional[str] = Query(None, description="Search by name, phone, or member ID"),
+    month: Optional[str] = Query(None, description="Filter by join month (YYYY-MM format)"),
     db: Session = Depends(get_db),
     _: Admin = Depends(get_current_admin),
 ):
     skip = (page - 1) * page_size
     
     if search:
-        members = member_service.search_members(db, search, skip, page_size)
-        total = len(member_service.search_members(db, search, 0, 10000))  # Get total count
+        members = member_service.search_members(db, search, skip, page_size, month)
+        total = len(member_service.search_members(db, search, 0, 10000, month))  # Get total count
     else:
-        members = member_service.get_members(db, skip, page_size)
-        total = db.query(member_service.Member).count()
+        members = member_service.get_members(db, skip, page_size, month)
+        total = member_service.get_members_count(db, month)
     
     return PaginatedResponse.create(
         items=members,
